@@ -46,7 +46,7 @@ jobs:
 
       - name: Update kubeconfig for EKS
         run: |
-          aws eks update-kubeconfig --region us-east-1 --name node-app
+          aws eks update-kubeconfig --region us-west-2 --name node-app
 
       - name: Deploy to EKS with Helm
         run: |
