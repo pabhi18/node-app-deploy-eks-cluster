@@ -12,21 +12,8 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/node-app:latest .
-
-      - name: Push Image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/node-app:latest
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+        run: docker build -t node-app .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -34,21 +21,13 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v2.0
-        with:
-          version: 'v1.22.0'
 
-      - name: Install Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - name: autheticate ecr
+        run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 637423391401.dkr.ecr.us-east-1.amazonaws.com
 
-      - name: Update kubeconfig for EKS
-        run: |
-          aws eks update-kubeconfig --region us-west-2 --name node-app
+      - name: tag image
+        run: docker tag node-app:latest 637423391401.dkr.ecr.us-east-1.amazonaws.com/node-app:latest
 
-      - name: Deploy to EKS with Helm
-        run: |
-          helm upgrade --install node-app ./node-app --set image.repository=${{ secrets.DOCKER_USERNAME }}/node-app --set image.tag=latest
+      - name: Push Image to ECR
+        run: docker push 637423391401.dkr.ecr.us-east-1.amazonaws.com/node-app:latest
 
