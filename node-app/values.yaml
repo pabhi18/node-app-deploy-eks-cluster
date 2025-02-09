@@ -54,12 +54,16 @@ ingress:
     alb.ingress.kubernetes.io/target-type: ip 
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'  
     alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:637423391401:certificate/2185e123-388c-464a-b531-8dd1863bf96b"
+    alb.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
     - host: toyocars.online
       paths:
         - path: /
           pathType: Prefix
-  tls: []
+  tls:
+    - hosts:
+        - toyocars.online
+      secretName: my-tls-secret
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
