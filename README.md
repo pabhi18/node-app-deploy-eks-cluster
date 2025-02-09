@@ -1,5 +1,5 @@
 # Node.js Chat App
 
-<video src="https://nodejs-app-eks.s3.us-east-1.amazonaws.com/video.mov" controls>
-  Your browser does not support the video tag.
-</video>
+
+https://github.com/user-attachments/assets/79c331ef-03ce-40b2-a054-3c3f8f7ec974
+
