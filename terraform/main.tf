@@ -18,46 +18,55 @@ module "vpc" {
   }
 }
 
-# ECR policy
-resource "aws_iam_policy" "ecr_policy" {
-  name = "eks-ecr-policy"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:GetRepositoryPolicy",
-          "ecr:DescribeRepositories",
-          "ecr:ListImages",
-          "ecr:BatchGetImage"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
+resource "aws_iam_policy" "eks_policies" {
+  for_each = {
+    ecr_policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "ecr:GetAuthorizationToken",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:GetRepositoryPolicy",
+            "ecr:DescribeRepositories",
+            "ecr:ListImages",
+            "ecr:BatchGetImage"
+          ]
+          Resource = "*"
+        }
+      ]
+    })
 
-# ALB policy
-resource "aws_iam_policy" "alb_policy" {
-  name = "eks-alb-policy"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:*",
-          "ec2:CreateSecurityGroup",
-          "ec2:Describe*"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
+    alb_policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "iam:CreateServiceLinkedRole",
+            "iam:ListServerCertificates",
+            "iam:GetServerCertificate",
+            "ec2:Describe*",
+            "ec2:AuthorizeSecurityGroupIngress",
+            "ec2:RevokeSecurityGroupIngress",
+            "ec2:CreateSecurityGroup",
+            "elasticloadbalancing:*",
+            "acm:ListCertificates",
+            "acm:DescribeCertificate",
+            "waf-regional:*",
+            "wafv2:*",
+            "shield:*"
+          ]
+          Resource = "*"
+        }
+      ]
+    })
+  }
+
+  name   = "eks-${each.key}"
+  policy = each.value
 }
 
 module "eks" {
@@ -75,12 +84,12 @@ module "eks" {
       min_size     = 0
       max_size     = 5
       desired_size = 1
-      instance_types = ["t3.small"]
+      instance_types = ["t3.medium"]
       capacity_type  = "SPOT"
 
       iam_role_additional_policies = {
-        AmazonECR_Policy = aws_iam_policy.ecr_policy.arn
-        ALBIngress_Policy = aws_iam_policy.alb_policy.arn
+        AmazonECR_Policy  = aws_iam_policy.eks_policies["ecr_policy"].arn
+        ALBIngress_Policy = aws_iam_policy.eks_policies["alb_policy"].arn
       }
     }
   }

@@ -53,7 +53,7 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing  
     alb.ingress.kubernetes.io/target-type: ip 
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'  
-    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:637423391401:certificate/4905a594-0c39-4280-b669-abbf5d4b22ef"
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:637423391401:certificate/e09d47ca-58f8-4235-8759-1e88650e6934"
   hosts:
     - host: toyocars.online
       paths:
